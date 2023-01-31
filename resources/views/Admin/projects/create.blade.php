@@ -46,6 +46,17 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="my-3">
+                    @foreach ($technologies as $technology)
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="{{ $technology->slug }}}}"
+                                name="technologies[]" value="{{ $technology->id }}"
+                                {{ in_array($technology->id, old('technologies', [])) ? 'checked' : null }}>
+                            <label class="form-check-label"
+                                for="{{ $technology->slug }}}}">{{ $technology->name }}</label>
+                        </div>
+                    @endforeach
+                </div>
                 <button type="submit" class="btn btn-primary">Crea</button>
             </form>
         </div>
