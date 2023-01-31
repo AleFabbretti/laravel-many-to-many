@@ -105,6 +105,12 @@ class ProjectController extends Controller
         $project->slug = Str::slug($data['title']);
         $project->update($data);
 
+        if( isset($data['technologies']) ) {
+            $project->technologies()->sync($data['technologies']);
+        } else {
+            $project->technologies()->sync([]);
+        }
+
         return redirect()->route('admin.project.index')->with('message', "Il progetto $old_title è stato aggiornato");
     }
 
