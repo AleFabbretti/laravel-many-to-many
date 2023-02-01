@@ -48,17 +48,20 @@ class ProjectController extends Controller
     {
         $data = $request->validated();
 
-        $img_path = Storage::disk('public')->put('uploads', $data['cover_image']);
-
         $new_project = new Project();
         $new_project->fill($data);
         $new_project->slug = Str::slug($new_project->title);
-        $new_project->cover_image = $img_path;
+
+        if (isset($data['cover_image']) ) {
+            $img_path = Storage::disk('public')->put('uploads', $data['cover_image']);
+            $new_project->cover_image = $img_path;
+        }
         $new_project->save();
 
         if (isset($data['techonologies']) ) {
             $new_project->techonologies()->sync($data['techonologies']);
         }
+        
         
 
         return redirect()->route('admin.project.index')->with('message', 'Progetto creato con successo!');
@@ -86,8 +89,7 @@ class ProjectController extends Controller
     {
         $types = Type::all();
         $technologies = Technology::all();
-
-       return view('admin.projects.edit', compact('project', 'types', 'technologies'));
+        return view('admin.projects.edit', compact('project', 'types', 'technologies'));
     }
 
     /**
@@ -103,15 +105,25 @@ class ProjectController extends Controller
 
         $old_title = $project->title;
         $project->slug = Str::slug($data['title']);
-        $project->update($data);
-
-        if( isset($data['technologies']) ) {
-            $project->technologies()->sync($data['technologies']);
-        } else {
-            $project->technologies()->sync([]);
+        if ( isset($data['cover_image']) ) {
+            if($project->cover_image ) {
+                Storage::disk('public')->delete($project->cover_image);
+            }
+            $data['cover_image'] = Storage::disk('public')->put('uploads', $data['cover_image']);
         }
+        
+        $project->update($data);
+        $technologies = isset($data['technologies']) ? $data['technologies'] : [];
+        $project->technologies()->sync($technologies);
+        
 
         return redirect()->route('admin.project.index')->with('message', "Il progetto $old_title è stato aggiornato");
+
+        // if( isset($data['technologies']) ) {
+        //     $project->technologies()->sync($data['technologies']);
+        // } else {
+        //     $project->technologies()->sync([]);
+        // }
     }
 
     /**
